@@ -1,0 +1,21 @@
+# Ignore backend-related files
+/backend/
+
+# Ignore configuration files
+/Cargo.lock
+/Rustfmt.toml
+/Clippy.toml
+
+# Ignore version control system directories
+/.git/
+/.github/
+
+# Ignore build directories
+/target/
+
+# Ignore any logs
+*.log
+
+# Ignore other non-essential files
+/.env
+/README.md

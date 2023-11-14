@@ -1,13 +1,10 @@
 use actix_cors::Cors;
-use actix_web::{web, App, HttpServer};
+use actix_web::{App, HttpServer};
 use dotenv::dotenv;
 use std::env;
 
-mod data_store;
-mod handlers;
-mod models;
-mod router;
-mod utils;
+mod data;
+mod routes;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -27,8 +24,8 @@ async fn main() -> std::io::Result<()> {
 
         App::new()
             .wrap(cors)
-            .configure(router::config)
-            .service(actix_web::web::scope("/navbar").configure(handlers::scoped_config))
+            .configure(routes::config)
+            .service(actix_web::web::scope("/navbar").configure(routes::config))
     })
     .bind(&bind_address)?
     .run()
