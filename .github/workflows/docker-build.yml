@@ -1,0 +1,36 @@
+name: Build and Push Docker
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build_and_push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v2
+
+      # If needed, set up your Rust environment
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Log in to DigitalOcean Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: registry.digitalocean.com
+          username: ${{ secrets.DOCR_USERNAME }}
+          password: ${{ secrets.DOCR_PASSWORD }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: registry.digitalocean.com/algorusty/your-image-name:latest
