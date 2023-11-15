@@ -36,31 +36,31 @@ impl DataStore {
         Ok(DataStore { http_client, bucket, region, access_key, secret_key, endpoint })
     }
 
-    pub async fn list_all_objects(&self) -> Result<Vec<String>, Box<dyn Error>> {
+    fn generate_auth_header(&self, http_method: &str, canonical_uri: &str, payload: &[u8]) -> Result<String, Box<dyn Error>> {
         let date = Utc::now();
         let date_str = date.format("%Y%m%dT%H%M%SZ").to_string();
         let date_short = date.format("%Y%m%d").to_string();
         let service = "s3";
         let request_type = "aws4_request";
-
-        let canonical_uri = format!("/{}/", self.bucket);
         let canonical_querystring = "";
-
-        let canonical_headers = format!("host:{}\nx-amz-date:{}\n", self.endpoint, date_str);
         let signed_headers = "host;x-amz-date";
-        let payload_hash = hash_payload(b"");
-        let canonical_request = format!("GET\n{}\n{}\n{}\n{}\n{}", canonical_uri, canonical_querystring, canonical_headers, signed_headers, payload_hash);
+        let payload_hash = hash_payload(payload);
+        let canonical_headers = format!("host:{}\nx-amz-date:{}\n", self.endpoint, date_str);
 
+        let canonical_request = format!("{}\n{}\n{}\n{}\n{}\n{}", http_method, canonical_uri, canonical_querystring, canonical_headers, signed_headers, payload_hash);
         let string_to_sign = format!("AWS4-HMAC-SHA256\n{}\n{}/{}/{}/{}\n{}", date_str, date_short, self.region, service, request_type, hex::encode(Sha256::digest(canonical_request.as_bytes())));
-
         let signing_key = derive_signing_key(&self.secret_key, &date_short, &self.region, service);
         let signature = hex::encode(hmac_sha256(&signing_key, string_to_sign.as_bytes()));
 
-        let authorization_header = format!("AWS4-HMAC-SHA256 Credential={}/{}/{}/{}/{}, SignedHeaders={}, Signature={}", self.access_key, date_short, self.region, service, request_type, signed_headers, signature);
+        Ok(format!("AWS4-HMAC-SHA256 Credential={}/{}/{}/{}/{}, SignedHeaders={}, Signature={}", self.access_key, date_short, self.region, service, request_type, signed_headers, signature))
+    }
+
+    pub async fn list_all_objects(&self) -> Result<Vec<String>, Box<dyn Error>> {
+        let canonical_uri = format!("/{}/", self.bucket);
+        let authorization_header = self.generate_auth_header("GET", &canonical_uri, b"")?;
 
         let response = self.http_client.get(&self.endpoint)
             .header("Authorization", authorization_header)
-            .header("x-amz-date", date_str)
             .send().await?;
 
         if !response.status().is_success() {
