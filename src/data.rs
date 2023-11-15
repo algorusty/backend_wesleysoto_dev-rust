@@ -18,7 +18,7 @@ struct ListObjectsResponse {
 
 #[derive(Deserialize)]
 struct S3Object {
-    Key: String,
+    key: String,
 }
 
 impl DataStore {
@@ -44,7 +44,7 @@ impl DataStore {
         }
 
         let list_objects_response: ListObjectsResponse = response.json().await?;
-        Ok(list_objects_response.Contents.into_iter().map(|obj| obj.Key).collect())
+        Ok(list_objects_response.Contents.into_iter().map(|obj| obj.key).collect())
     }
 
     pub async fn objects(&self) -> Vec<String> {
