@@ -1,15 +1,14 @@
 use crate::data::DataStore;
-use crate::data::NavItem;
 use actix_web::{web, HttpResponse, Responder, http::StatusCode};
 use actix_web::error::InternalError;
 use log::error;
 
-pub async fn get_navbar_items() -> Result<Vec<NavItem>, actix_web::Error> {
+pub async fn get_navbar_items() -> Result<Vec<String>, actix_web::Error> {
     let data_store_result = DataStore::new().await;
     match data_store_result {
         Ok(data_store) => {
             let nav_items = data_store.objects().await;
-            Ok(nav_items.iter().map(|item| NavItem::from(item.to_string())).collect())            
+            Ok(nav_items)            
         },
         Err(e) => {
             error!("Failed to initialize DataStore: {:?}", e);

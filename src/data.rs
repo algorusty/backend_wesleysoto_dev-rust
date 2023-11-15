@@ -2,7 +2,6 @@ use quick_xml::Reader;
 use quick_xml::events::Event;
 use std::str;
 use reqwest::Client;
-use serde::{Deserialize, Serialize};
 use std::error::Error;
 use log::error;
 use hmac::{Hmac, Mac};
@@ -16,28 +15,6 @@ pub struct DataStore {
     access_key : String,
     secret_key : String,
     endpoint   : String,
-}
-
-#[derive(Debug, Deserialize)]
-struct ListBucketResult {
-    #[serde(rename = "Contents", default)]
-    contents: Vec<S3Object>,
-}
-
-#[derive(Debug, Deserialize)]
-struct S3Object {
-    Key: String,
-    LastModified: String,
-    ETag: String,
-    Size: u64,
-    StorageClass: String,
-    Owner: S3ObjectOwner,
-}
-
-#[derive(Debug, Deserialize)]
-struct S3ObjectOwner {
-    ID: String,
-    DisplayName: String,
 }
 
 // Define the hash_payload function.
@@ -81,7 +58,6 @@ impl DataStore {
 
         let authorization_header = format!("AWS4-HMAC-SHA256 Credential={}/{}/{}/{}/{}, SignedHeaders={}, Signature={}", self.access_key, date_short, self.region, service, request_type, signed_headers, signature);
 
-        let endpoint = format!("https://{}.{}.cdn.digitaloceanspaces.com", self.bucket, self.region);
         let response = self.http_client.get(&self.endpoint)
             .header("Authorization", authorization_header)
             .header("x-amz-date", date_str)
@@ -112,29 +88,13 @@ impl DataStore {
             }
             buf.clear();
         }
+        println!("Keys: {:?}", keys);
 
         Ok(keys)
     }
 
     pub async fn objects(&self) -> Vec<String> {
         self.list_all_objects().await.unwrap_or_else(|_| vec![])
-    }
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct NavItem {
-    pub icon: String,
-    pub text: String,
-}
-
-
-impl From<String> for NavItem {
-    fn from(item: String) -> Self {
-        let parts: Vec<&str> = item.split(':').collect();
-        NavItem {
-            icon: parts[0].to_string(),
-            text: parts[1].to_string(),
-        }
     }
 }
 
