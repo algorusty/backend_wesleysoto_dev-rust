@@ -88,7 +88,6 @@ impl DataStore {
             }
             buf.clear();
         }
-        println!("Keys: {:?}", keys);
 
         Ok(keys)
     }
