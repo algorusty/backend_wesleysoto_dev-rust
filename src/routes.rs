@@ -28,3 +28,11 @@ async fn get_navbar_items_responder() -> impl Responder {
 pub fn config(cfg: &mut web::ServiceConfig) {
     cfg.service(web::resource("").route(web::get().to(get_navbar_items_responder)));
 }
+
+async fn health_check_responder() -> impl Responder {
+    HttpResponse::Ok().finish()
+}
+
+pub fn config_health_check(cfg: &mut web::ServiceConfig) {
+    cfg.service(web::resource("").route(web::get().to(health_check_responder)));
+}

@@ -11,7 +11,7 @@ async fn main() -> std::io::Result<()> {
     dotenv().ok();
     env_logger::init();
 
-    let bind_address = env::var("BIND_ADDRESS").unwrap_or_else(|_| "127.0.0.1:8080".to_string());
+    let bind_address = env::var("BIND_ADDRESS").unwrap_or_else(|_| "127.0.0.1:3000".to_string());
 
     println!("Starting server at: {}", &bind_address);
 
@@ -26,6 +26,7 @@ async fn main() -> std::io::Result<()> {
             .wrap(cors)
             .configure(routes::config)
             .service(actix_web::web::scope("/navbar").configure(routes::config))
+            .service(actix_web::web::scope("/health").configure(routes::config_health_check))
     })
     .bind(&bind_address)?
     .run()

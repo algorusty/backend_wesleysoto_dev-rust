@@ -18,6 +18,11 @@ dotenv = "0.15"
 env_logger = "0.10"
 tokio = { version = "1", features = ["full"] }
 log = "0.4"
+hmac = "0.12"
+sha2 = "0.10"
+chrono = "0.4"
+hex = "0.4"
+quick-xml = "0.31"
 # reqwest = { version = "0.11", features = ["json"] }
 
 [[bin]]
