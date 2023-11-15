@@ -33,4 +33,4 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: registry.digitalocean.com/algorusty/your-image-name:latest
+          tags: registry.digitalocean.com/algorusty/backend_wesleysoto_dev-rust:latest
